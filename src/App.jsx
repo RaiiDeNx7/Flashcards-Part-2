@@ -35,12 +35,24 @@ function App() {
 
   // Handle guess submission
   const handleSubmit = () => {
-    if (guess.trim().toLowerCase() === currentCard.answer.toLowerCase()) {
-      setFeedback("correct");
-    } else {
-      setFeedback("incorrect");
-    }
+  const user = normalize(guess);
+  const correct = normalize(currentCard.answer);
+
+  // Count as correct if user input is a substring of correct answer
+  if (correct.includes(user) && user.length > 0) {
+    setFeedback("correct");
+  } else {
+    setFeedback("incorrect");
+  }
   };
+
+  function normalize(str) {
+  return str
+    .toLowerCase()               // ignore case
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") // remove punctuation
+    .trim();                     // remove extra spaces
+}
+
 
   // Navigation
   const nextCard = () => {
