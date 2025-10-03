@@ -3,13 +3,11 @@ import Flashcard from "./Flashcard";
 import "./App.css";
 
 function App() {
-  // Card set metadata
   const cardSetTitle = "Computer Science Flashcards";
   const cardSetDescription =
     "Learn fun facts and key figures in Computer Science!";
 
-  // List of cards
-  const cards = [
+  const originalCards = [
     { question: "Who is the father of Computer Science?", answer: "Alan Turing", difficulty: "easy", image: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg" },
     { question: "Who was the first programmer?", answer: "Ada Lovelace", difficulty: "easy", image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" },
     { question: "What was the first computer bug?", answer: "A moth stuck in a relay", difficulty: "easy" },
@@ -28,6 +26,7 @@ function App() {
   ];
 
   // State
+  const [cards, setCards] = useState([...originalCards]); // current sequence
   const [index, setIndex] = useState(0);
   const [guess, setGuess] = useState("");
   const [feedback, setFeedback] = useState(null); // "correct" | "incorrect" | null
@@ -60,16 +59,27 @@ function App() {
     }
   };
 
+  // Shuffle cards
+  const shuffleCards = () => {
+    const shuffled = [...cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setCards(shuffled);
+    setIndex(0);       // reset to first card of shuffled deck
+    setGuess("");
+    setFeedback(null);
+  };
+
   return (
     <div className="App">
-      {/* Card set info */}
       <h2>{cardSetTitle}</h2>
       <h4>{cardSetDescription}</h4>
       <h5>
         Card {index + 1} of {cards.length}
       </h5>
 
-      {/* Flashcard */}
       <Flashcard
         front={currentCard.question}
         back={currentCard.answer}
@@ -77,7 +87,6 @@ function App() {
         image={currentCard.image}
       />
 
-      {/* Guess input */}
       <div>
         <input
           type="text"
@@ -92,9 +101,9 @@ function App() {
               : "1px solid #ccc",
             padding: "0.5em",
             borderRadius: "6px",
-            width: "300px",        /* makes it wider */
-            height: "50px",        /* makes it taller */
-            fontSize: "20px",     /* makes the text inside larger */
+            width: "300px",
+            height: "50px",
+            fontSize: "20px",
             marginRight: "1em",
             marginTop: "2em"
           }}
@@ -102,13 +111,15 @@ function App() {
         <button onClick={handleSubmit}>Submit Guess</button>
       </div>
 
-      {/* Navigation */}
       <div style={{ marginTop: "1em" }}>
         <button onClick={prevCard} disabled={index === 0}>
           ⭠ Prev
         </button>
         <button onClick={nextCard} disabled={index === cards.length - 1}>
           Next ⭢
+        </button>
+        <button onClick={shuffleCards} style={{ marginLeft: "1em" }}>
+          Shuffle
         </button>
       </div>
     </div>
