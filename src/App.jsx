@@ -3,10 +3,12 @@ import Flashcard from "./Flashcard";
 import "./App.css";
 
 function App() {
+  // Card set metadata
   const cardSetTitle = "Computer Science Flashcards";
   const cardSetDescription =
     "Learn fun facts and key figures in Computer Science!";
 
+  // Original list of cards
   const originalCards = [
     { question: "Who is the father of Computer Science?", answer: "Alan Turing", difficulty: "easy", image: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg" },
     { question: "Who was the first programmer?", answer: "Ada Lovelace", difficulty: "easy", image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Ada_Lovelace_portrait.jpg" },
@@ -26,33 +28,37 @@ function App() {
   ];
 
   // State
-  const [cards, setCards] = useState([...originalCards]); // current sequence
+  const [cards, setCards] = useState([...originalCards]);
   const [index, setIndex] = useState(0);
   const [guess, setGuess] = useState("");
   const [feedback, setFeedback] = useState(null); // "correct" | "incorrect" | null
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
 
   const currentCard = cards[index];
 
+  // Helper: normalize strings (lowercase, remove punctuation, trim)
+  const normalize = (str) =>
+    str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").trim();
+
   // Handle guess submission
   const handleSubmit = () => {
-  const user = normalize(guess);
-  const correct = normalize(currentCard.answer);
+    const user = normalize(guess);
+    const correct = normalize(currentCard.answer);
 
-  // Count as correct if user input is a substring of correct answer
-  if (correct.includes(user) && user.length > 0) {
-    setFeedback("correct");
-  } else {
-    setFeedback("incorrect");
-  }
+    if (correct.includes(user) && user.length > 0) {
+      setFeedback("correct");
+
+      setCurrentStreak((prev) => {
+        const newStreak = prev + 1;
+        setLongestStreak((longest) => Math.max(longest, newStreak));
+        return newStreak;
+      });
+    } else {
+      setFeedback("incorrect");
+      setCurrentStreak(0);
+    }
   };
-
-  function normalize(str) {
-  return str
-    .toLowerCase()               // ignore case
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") // remove punctuation
-    .trim();                     // remove extra spaces
-}
-
 
   // Navigation
   const nextCard = () => {
@@ -79,19 +85,27 @@ function App() {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setCards(shuffled);
-    setIndex(0);       // reset to first card of shuffled deck
+    setIndex(0);
     setGuess("");
     setFeedback(null);
   };
 
   return (
     <div className="App">
+      {/* Card set info */}
       <h2>{cardSetTitle}</h2>
       <h4>{cardSetDescription}</h4>
       <h5>
         Card {index + 1} of {cards.length}
       </h5>
 
+      {/* Streak counters */}
+      <div style={{ marginTop: "0.5em", color: "white" }}>
+        <p>Current Streak: {currentStreak}</p>
+        <p>Longest Streak: {longestStreak}</p>
+      </div>
+
+      {/* Flashcard */}
       <Flashcard
         front={currentCard.question}
         back={currentCard.answer}
@@ -99,6 +113,8 @@ function App() {
         image={currentCard.image}
       />
 
+
+      {/* Guess input */}
       <div>
         <input
           type="text"
@@ -106,10 +122,10 @@ function App() {
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           style={{
-            border: feedback === "correct" 
-              ? "3px solid limegreen" 
-              : feedback === "incorrect" 
-              ? "3px solid red" 
+            border: feedback === "correct"
+              ? "3px solid limegreen"
+              : feedback === "incorrect"
+              ? "3px solid red"
               : "1px solid #ccc",
             padding: "0.5em",
             borderRadius: "6px",
@@ -123,6 +139,7 @@ function App() {
         <button onClick={handleSubmit}>Submit Guess</button>
       </div>
 
+      {/* Navigation */}
       <div style={{ marginTop: "1em" }}>
         <button onClick={prevCard} disabled={index === 0}>
           ⭠ Prev
@@ -133,6 +150,12 @@ function App() {
         <button onClick={shuffleCards} style={{ marginLeft: "1em" }}>
           Shuffle
         </button>
+      </div>
+
+      {/* Streak counters */}
+      <div style={{ marginTop: "1em" }}>
+        <p>Current Streak: {currentStreak}</p>
+        <p>Longest Streak: {longestStreak}</p>
       </div>
     </div>
   );
